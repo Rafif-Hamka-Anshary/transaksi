@@ -1,65 +1,157 @@
-import Image from "next/image";
+'use client'
+
+import { useEffect, useState } from 'react'
+
+interface Pesanan {
+  id_pesanan: number
+  tanggal_pesanan: string
+  total_harga: number
+  status_pesanan: string
+  pelanggan: {
+    nama: string
+    email: string
+  }
+  detail: {
+    jumlah: number
+    subtotal: number
+    produk: {
+      nama_produk: string
+      harga: number
+    }
+  }[]
+}
+
+interface Produk {
+  id_produk: number
+  nama_produk: string
+  kategori: string
+  harga: number
+}
 
 export default function Home() {
+  const [pesanan, setPesanan] = useState<Pesanan[]>([])
+  const [produk, setProduk] = useState<Produk[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [pesananRes, produkRes] = await Promise.all([
+          fetch('/api/pesanan'),
+          fetch('/api/produk')
+        ])
+        const pesananData = await pesananRes.json()
+        const produkData = await produkRes.json()
+        setPesanan(pesananData)
+        setProduk(produkData)
+      } catch (error) {
+        console.error('Failed to fetch data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-4xl font-bold text-gray-900 mb-8">Dashboard Transaksi</h1>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold text-gray-700">Total Pesanan</h3>
+            <p className="text-3xl font-bold text-blue-600">{pesanan.length}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold text-gray-700">Total Produk</h3>
+            <p className="text-3xl font-bold text-green-600">{produk.length}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-lg font-semibold text-gray-700">Total Pendapatan</h3>
+            <p className="text-3xl font-bold text-purple-600">
+              Rp {pesanan.reduce((sum, p) => sum + Number(p.total_harga), 0).toLocaleString()}
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Pesanan Table */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Daftar Pesanan</h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">ID</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Pelanggan</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Tanggal</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pesanan.map((p) => (
+                  <tr key={p.id_pesanan} className="border-t">
+                    <td className="px-4 py-2 text-sm text-gray-900">{p.id_pesanan}</td>
+                    <td className="px-4 py-2 text-sm text-gray-900">{p.pelanggan?.nama}</td>
+                    <td className="px-4 py-2 text-sm text-gray-900">
+                      {new Date(p.tanggal_pesanan).toLocaleDateString('id-ID')}
+                    </td>
+                    <td className="px-4 py-2 text-sm text-gray-900">
+                      Rp {Number(p.total_harga).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-2 text-sm">
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        p.status_pesanan === 'Diproses' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+                      }`}>
+                        {p.status_pesanan}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </main>
+
+        {/* Produk Table */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Daftar Produk</h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">ID</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Nama Produk</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Kategori</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Harga</th>
+                </tr>
+              </thead>
+              <tbody>
+                {produk.map((p) => (
+                  <tr key={p.id_produk} className="border-t">
+                    <td className="px-4 py-2 text-sm text-gray-900">{p.id_produk}</td>
+                    <td className="px-4 py-2 text-sm text-gray-900">{p.nama_produk}</td>
+                    <td className="px-4 py-2 text-sm text-gray-900">{p.kategori}</td>
+                    <td className="px-4 py-2 text-sm text-gray-900">
+                      Rp {Number(p.harga).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
-  );
+  )
 }
