@@ -17,38 +17,39 @@ Website dashboard untuk menampilkan data transaksi dari database menggunakan Nex
 - **Database**: Prisma ORM dengan PostgreSQL (Vercel Postgres)
 - **Deployment**: Vercel
 
-## Setup Development
+## Setup Database
 
-1. Clone repository ini
-2. Install dependencies:
+### Development (PostgreSQL Lokal)
+1. Install PostgreSQL di lokal
+2. Buat database baru
+3. Update `.env`:
+   ```
+   DATABASE_URL="postgresql://username:password@localhost:5432/transaksi_db?schema=public"
+   ```
+4. Jalankan:
    ```bash
-   npm install
+   npx prisma generate
+   npx prisma db push
+   npm run db:seed
    ```
 
-3. Setup database:
-   - Untuk development, gunakan SQLite:
-     - Ubah `prisma/schema.prisma` provider ke "sqlite"
-     - Jalankan `npx prisma generate`
-     - Jalankan `npx prisma db push`
-
-   - Untuk production (Vercel), gunakan PostgreSQL:
-     - Setup Vercel Postgres
-     - Update `DATABASE_URL` di environment variables
-
-4. Jalankan development server:
-   ```bash
-   npm run dev
-   ```
-
-5. Buka [http://localhost:3000](http://localhost:3000)
+### Production (Vercel Postgres)
+1. Di Vercel dashboard, buat Postgres database
+2. Copy DATABASE_URL dari Vercel
+3. Set environment variable `DATABASE_URL` di Vercel project settings
+4. Deploy akan otomatis menjalankan migrate dan seed
 
 ## Deploy ke Vercel
 
 1. Push kode ke GitHub
 2. Connect repository ke Vercel
+3. Set environment variable DATABASE_URL di Vercel
+4. Deploy
 3. Setup environment variables di Vercel:
    - `DATABASE_URL`: URL Vercel Postgres database
 4. Deploy
+
+> Jika repo masih tidak muncul di Vercel, gunakan GitHub integration ulang atau import repositori secara manual dari akun GitHub yang benar.
 
 ## API Endpoints
 
