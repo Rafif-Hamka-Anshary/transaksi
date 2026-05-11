@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig = {
-  turbopack: {
-    root: __dirname,
-  },
+  // Vercel akan menangani turbopack secara otomatis
+  // Konfigurasi tidak diperlukan untuk deployment
 } satisfies NextConfig;
 
 export default nextConfig;

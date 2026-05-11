@@ -32,20 +32,29 @@ export default function Home() {
   const [pesanan, setPesanan] = useState<Pesanan[]>([])
   const [produk, setProduk] = useState<Produk[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setError(null)
         const [pesananRes, produkRes] = await Promise.all([
           fetch('/api/pesanan'),
           fetch('/api/produk')
         ])
+
+        if (!pesananRes.ok || !produkRes.ok) {
+          throw new Error('API request failed')
+        }
+
         const pesananData = await pesananRes.json()
         const produkData = await produkRes.json()
-        setPesanan(pesananData)
-        setProduk(produkData)
+
+        setPesanan(Array.isArray(pesananData) ? pesananData : [])
+        setProduk(Array.isArray(produkData) ? produkData : [])
       } catch (error) {
         console.error('Failed to fetch data:', error)
+        setError('Gagal memuat data. Pastikan DATABASE_URL sudah dikonfigurasi di Vercel.')
       } finally {
         setLoading(false)
       }
@@ -57,6 +66,23 @@ export default function Home() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md">
+          <h2 className="text-xl font-bold text-red-800 mb-4">Error</h2>
+          <p className="text-red-700">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Coba Lagi
+          </button>
+        </div>
       </div>
     )
   }

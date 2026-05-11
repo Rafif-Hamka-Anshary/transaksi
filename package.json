@@ -10,6 +10,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:test": "node test_db.js",
+    "db:migrate": "node migrate_mysql_to_postgres.js",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -26,6 +28,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "mysql2": "^3.22.3",
+    "pg": "^8.20.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
